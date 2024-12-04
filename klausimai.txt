@@ -1,0 +1,2 @@
+ if (!user || !bcrypt.compareSync(password, user.password))
+                                (password, user.password) ar sita dalis palygina ar suvestas passwordas atitinka isaugota duomenu bazeje?
