@@ -1,6 +1,6 @@
 "use strict";
 
-const User = require("../models/user");
+const User = require("../models/userModel");
 const jwt = require("jsonwebtoken");
 
 const authorize = async (req, res, next) => {

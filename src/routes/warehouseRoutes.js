@@ -8,5 +8,6 @@ router.get("/", warehouseController.getAlProducts);
 router.get("/:id", warehouseController.getProductById);
 router.patch("/remove/:id", warehouseController.removeFromQuantity);
 router.patch("/add/:id", warehouseController.addToQuantity);
+router.delete("/delete/:id", warehouseController.removeProduct);
 
 module.exports = router;
