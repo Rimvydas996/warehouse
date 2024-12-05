@@ -1,4 +1,4 @@
-const { getProductById } = require("../controllers/warehouseContoller");
+const { getProductById, removeProduct } = require("../controllers/warehouseContoller");
 const Warehouse = require("../models/warehouseIModel");
 const mongoose = require("mongoose");
 
@@ -6,60 +6,58 @@ const warehouseRepository = {
   getAlProducts: async (req, res) => {
     try {
       const products = await Warehouse.find({});
-      res.json(products);
+      // res.json(products);
+      return products;
     } catch (err) {
-      res.status(500).json({ error: "Klaida skaitant duomenys" + err.toString() });
+      throw new Error("Klaida skaitant duomenys" + err.massage);
     }
   },
   addProduct: async (title, quantity, supplyStatus, storageLocation) => {
     try {
       const product = new Warehouse({ title, quantity, supplyStatus, storageLocation });
       await product.save();
-      res.status(201).json(product);
+      return product;
     } catch (err) {
-      res.status(500).json({ error: "Klaida issaugant duomenis: " + err.toString() });
+      throw new Error("Klaida issaugant duomenis: " + err.massage);
     }
   },
   getProductById: async (id) => {
     try {
       if (!mongoose.Types.ObjectId.isValid(id)) {
-        return res.status(404).json({ error: "Netinkamas ID tipas" });
+        throw new Error("Netinkamas ID tipas");
       }
       const product = await Warehouse.findById(id);
       if (!product) {
-        return res.status(404).json({ error: "Elementas nerastas" });
+        throw new Error("Elementas nerastas");
       }
-      res.json(product);
+      return product;
     } catch (err) {
       if (err.name === "CastError" && err.kind === "ObjectId") {
-        res.status(404).json({ error: "Elementas nerastas" });
-        return;
+        throw new Error("Elementas nerastas" + err.massege);
       }
-      res.status(500).json({ error: "Klaida skaitant duomenis" });
+      throw new Error("Klaida skaitant duomenis");
     }
   },
-  changeProductQuantity: async (id, res) => {
+  changeProductQuantity: async (id, quantity) => {
     try {
-      const product = await Warehouse.findById(id);
-      if (!product) {
-        return res.status(404).json({ error: "Elementas nerastas" });
-      }
+      return await Warehouse.findByIdAndUpdate(id, { quantity }, { new: true });
     } catch (err) {
       if (err.name === "CastError" && err.kind === "ObjectId") {
-        return res.status(404).json({ error: "Elementas nerastas" });
+        throw new Error("Elementas nerastas");
       }
-      return res.status(500).json({ error: "Klaida atnaujinat duomenys" + product });
+      throw new Error("Klaida atnaujinat duomenys");
     }
-    await Warehouse.findByIdAndUpdate(id, { quantity });
-    res.json({ massage: "Kiekis pakeistas" });
   },
-  adjustQuantity: async (kriptis, zingsnis, id) => {
+  adjustQuantity: async (id, abc) => {
     try {
       const product = await Warehouse.findByIdAndUpdate(id, { $inc: abc }, { new: true, runValidators: true });
-      return { product };
+      return product;
     } catch (err) {
-      return { error: "Klaida " + err.toString() };
+      throw new Error("Klaida " + err.massage);
     }
+  },
+  removeProduct: async (id) => {
+    await Warehouse.findByIdAndDelete(id);
   },
 };
 
