@@ -1,88 +1,117 @@
-const Warehouse = require("../models/warehouseItem");
+// const Warehouse = require("../models/warehouseItem");
 const mongoose = require("mongoose");
+const warehouseRepository = require("../repositories/warehouseRepostiry");
+const AppError = require("../utils/errors/AppError");
+const ErrorTypes = require("../utils/errors/errorTypes");
 
-exports.getAlProducts = async (req, res) => {
-  try {
-    const products = await Warehouse.find({});
-    res.json(products);
-  } catch (err) {
-    res.status(500).json({ error: "Klaida skaitant duomenys" + err.toString() });
-  }
+exports.getAlProducts = async (req, res, next) => {
+  const allProducts = await warehouseRepository.getAlProducts();
+  res.status(201).json(allProducts);
 };
-exports.addProduct = async (req, res) => {
+
+exports.addProduct = (req, res, next) => {
   try {
     const { title, quantity, supplyStatus, storageLocation } = req.body;
     if (!title || !quantity || !supplyStatus || !storageLocation) {
-      return res.status(400).json({ error: "Truksta lauku uzklausoje" });
+      throw new AppError("Truksta lauku uzklausoje", 400, ErrorTypes.REQUIRED_FIELD_ERROR);
     }
-    const product = new Warehouse({ title, quantity, supplyStatus, storageLocation });
-    await product.save();
-    res.status(201).json(product);
-  } catch (err) {
-    res.status(500).json({ error: "Klaida issaugant duomenis: " + err.toString() });
+    warehouseRepository.addProduct(title, quantity, supplyStatus, storageLocation).then((product) => {
+      return res.status(201).json(product);
+    });
+  } catch (error) {
+    next(error);
   }
+  // catch (err) {
+  // if (err.errorType === ErrorTypes.REQUIRED_FIELD_ERROR) {
+  // throw err;
+  // }
+  // return res.status(500).json({ error: "Klaida issaugant duomenis: " + err.toString() });
+  // }
 };
-exports.getProductById = async (req, res) => {
-  const id = req.params.id;
+
+exports.getProductById = async (req, res, next) => {
   try {
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(404).json({ error: "Netinkamas ID tipas" });
-    }
-    const product = await Warehouse.findById(id);
-    if (!product) {
-      return res.status(404).json({ error: "Elementas nerastas" });
-    }
-    res.json(product);
+    const id = req.params.id;
+    const getProductById = await warehouseRepository.getProductById(id);
+    res.status(200).json(getProductById);
   } catch (err) {
-    if (err.name === "CastError" && err.kind === "ObjectId") {
-      res.status(404).json({ error: "Elementas nerastas" });
-      return;
-    }
-    res.status(500).json({ error: "Klaida skaitant duomenis" });
+    next(err);
   }
 };
-exports.changeProductQuantity = async (req, res) => {
+
+exports.changeProductQuantity = (req, res, next) => {
   try {
     if (!req.body.quantity) {
-      res.status(400).json({ error: "Truksta quantity lauko" });
+      throw new AppError("Truksta quantity lauko", 400, ErrorTypes.REQUIRED_FIELD_ERROR);
     }
     const id = req.params.id;
-    const product = await Warehouse.findById(id);
-    if (!product) {
-      return res.status(404).json({ error: "Elementas nerastas" });
-    }
-  } catch (err) {
-    if (err.name === "CastError" && err.kind === "ObjectId") {
-      return res.status(404).json({ error: "Elementas nerastas" });
-    }
-    return res.status(500).json({ error: "Klaida atnaujinat duomenys" + product });
+    const { quantity } = req.body;
+    warehouseRepository.changeProductQuantity(id, quantity).then((result) => {
+      return res.status(200).json(result);
+    });
+  } catch (error) {
+    next(error);
   }
-  const id = req.params.id;
-  const { quantity } = req.body;
-  await Warehouse.findByIdAndUpdate(id, { quantity });
-  res.json({ massage: "Kiekis pakeistas" });
+  // catch (err) {
+  //   if (err.errorType === ErrorTypes.REQUIRED_FIELD_ERROR) {
+  //     throw err;
+  //   }
+  //   return res.status(500).json({ error: "Klaida atnaujinat duomenys" + product });
+  // }
 };
-exports.changeQuantity = async (kriptis, zingsnis, id) => {
+
+exports.adjustQuantity = async (kriptis, zingsnis, id, next) => {
   try {
     if (!zingsnis) {
-      return res.status(400).json({ error: "Nenurodytas kiekis" });
+      throw new AppError("Nenurodytas kiekis", 400, ErrorTypes.REQUIRED_FIELD_ERROR);
+      // return res.status(400).json({ error: "Nenurodytas kiekis" });
     }
     let abc = { quantity: +zingsnis };
     if (kriptis === "-") {
       abc = { quantity: -zingsnis };
     }
-    const product = await Warehouse.findByIdAndUpdate(id, { $inc: abc }, { new: true, runValidators: true });
-
-    return { product };
-  } catch (err) {
-    return { error: "Klaida " + err.toString() };
+    return await warehouseRepository.adjustQuantity(id, abc);
+  } catch (error) {
+    next(error);
   }
+  // catch (err) {
+  // if (err.errorType === ErrorTypes.REQUIRED_FIELD_ERROR) {
+  // throw err;
+  // }
+  // return { error: "Klaida " + err.toString() };
+  // }
 };
 
 exports.removeFromQuantity = async (req, res) => {
-  return res.json(await this.changeQuantity("-", req.body.zingsnis, req.params.id));
+  return res.json(await this.adjustQuantity("-", req.body.zingsnis, req.params.id));
 };
 
 exports.addToQuantity = async (req, res) => {
-  return res.json(await this.changeQuantity("+", req.body.zingsnis, req.params.id));
+  return res.json(await this.adjustQuantity("+", req.body.zingsnis, req.params.id));
 };
+exports.removeProduct = async (req, res, next) => {
+  try {
+    const id = req.params.id;
+    const warehouse = await warehouseRepository.getProductById(id);
+
+    if (!warehouse) {
+      return res.status(404).json({ error: "Elementas nerastas" });
+    }
+
+    await warehouseRepository.removeProduct(id);
+    res.status(204).json("istrinta sekmingai");
+  } catch (err) {
+    next(err); // Perduodame klaidą į error handling middleware
+  }
+};
+// const id = req.params.id;
+// if (!id) {
+//   throw new AppError("Id laukelis", 400, ErrorTypes.NOT_FOUND_ERROR);
+// }
+// warehouseRepository
+//   .removeProduct(id)
+//   .then(() => {
+//     return res.json("Istrinta sekmingai");
+//   })
+//   .catch((err) => res.status(err.statusCode).json({ message: err.message }));
+// };
