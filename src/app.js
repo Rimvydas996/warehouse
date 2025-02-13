@@ -9,6 +9,7 @@ const warehouseRouters = require("./routes/warehouseRoutes");
 const authRouters = require("./routes/authRoutes");
 const authorization = require("./middlewares/authMiddleware");
 const corseMiddleware = require("./middlewares/corseMiddleware");
+const errorHandler = require("./middlewares/errorHandler");
 
 app.use(express.json());
 
@@ -20,9 +21,12 @@ mongoose.connection.once("open", () => {
     console.log(`Serveris veikia ant ${port} porto`);
   });
 });
+
 app.use(corseMiddleware);
 app.use("/warehouse", authorization, warehouseRouters);
 app.use("/auth", authRouters);
 app.use((req, res) => {
   res.status(404).json({ error: "Puslapis nerastas" });
 });
+
+app.use(errorHandler);

@@ -1,30 +1,34 @@
 "use strict";
 
 const authRepository = require("../repositories/authRepository");
+const AppError = require("../utils/errors/AppError");
+const ErrorTypes = require("../utils/errors/errorTypes");
 
-exports.register = async (req, res) => {
+exports.register = async (req, res, next) => {
   try {
     const { email, password } = req.body;
     if (!email || !password) {
-      res.status(400).json({ error: "Truksta lauku uzklausoje" });
+      throw new AppError("Truksta lauku uzklausoje", 400, ErrorTypes.VALIDATION_ERROR);
     }
     authRepository.createUser(email, password);
   } catch (err) {
-    res.status.json({ error: "Klaida issaugant duomenys" + err.toString() });
+    next(err);
   }
 };
-
-exports.login = async (req, res) => {
+exports.login = async (req, res, next) => {
   try {
     const { email, password } = req.body;
     if (!email || !password) {
-      return res.status(400).json({ error: "Truksta lauku uzklausoje" });
+      throw new AppError("Truksta lauku uzklausoje", 400, ErrorTypes.VALIDATION_ERROR);
     }
 
     const token = await authRepository.authenticateUser(email, password);
 
-    res.status(201).json(token);
+    if (!token) {
+      throw new AppError("Blogi prisijungimo duomenys ", 401, ErrorTypes.VALIDATION_ERROR);
+    }
+    return res.status(200).json(token);
   } catch (err) {
-    return res.status(500).json({ error: "Klaida jungiantis i sistema" + err.toString() });
+    next(err);
   }
 };

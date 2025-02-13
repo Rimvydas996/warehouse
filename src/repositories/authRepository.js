@@ -3,23 +3,22 @@
 const User = require("../models/userModel");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+// repositorijose neturi buti trycath dalies
 
 const authRepository = {
   authenticateUser: async (email, password) => {
-    try {
-      const user = await User.findOne({ email });
-      if (!user || !bcrypt.compareSync(password, user.password)) {
-        return res.status(401).json({ message: "neteisingi prisijungimo duomenys" + user + password });
-      }
-      const token = jwt.sign({ userId: user._id, email: user.email }, process.env.JWT_SECRET, { expiresIn: "20m" });
-      user.token = token;
-      await user.save();
-      user.password = undefined;
-      user.token = undefined;
-      return { token: token, user: user };
-    } catch (err) {
-      throw new Error("Klaida jungiantis i sistema" + err.message);
+    const user = await User.findOne({ email });
+    if (!user) {
+      return null;
     }
+    const token = jwt.sign({ userId: user._id, email: user.email }, process.env.JWT_SECRET, { expiresIn: "1h" });
+    user.token = token;
+
+    await user.save();
+    user.password = undefined;
+    user.token = undefined;
+
+    return { token: token, user: user };
   },
   createUser: async (email, password) => {
     try {

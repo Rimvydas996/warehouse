@@ -6,8 +6,6 @@ router.put("/", warehouseController.addProduct);
 router.put("/:id", warehouseController.changeProductQuantity);
 router.get("/", warehouseController.getAlProducts);
 router.get("/:id", warehouseController.getProductById);
-router.patch("/remove/:id", warehouseController.removeFromQuantity);
-router.patch("/add/:id", warehouseController.addToQuantity);
-router.delete("/delete/:id", warehouseController.removeProduct);
+router.patch("/:id", warehouseController.removeFromQuantity);
 
 module.exports = router;

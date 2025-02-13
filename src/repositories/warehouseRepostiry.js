@@ -1,6 +1,8 @@
 const { getProductById, removeProduct } = require("../controllers/warehouseContoller");
 const Warehouse = require("../models/warehouseIModel");
 const mongoose = require("mongoose");
+const AppError = require("../utils/errors/AppError");
+const ErrorTypes = require("../utils/errors/errorTypes");
 
 const warehouseRepository = {
   getAlProducts: async (req, res) => {
@@ -24,18 +26,18 @@ const warehouseRepository = {
   getProductById: async (id) => {
     try {
       if (!mongoose.Types.ObjectId.isValid(id)) {
-        throw new Error("Netinkamas ID tipas");
+        throw new AppError("Netinkamas ID tipas");
       }
       const product = await Warehouse.findById(id);
       if (!product) {
-        throw new Error("Elementas nerastas");
+        throw new AppError("Elementas nerastas");
       }
       return product;
     } catch (err) {
       if (err.name === "CastError" && err.kind === "ObjectId") {
-        throw new Error("Elementas nerastas" + err.massege);
+        throw new AppError("Elementas nerastas" + err.massege);
       }
-      throw new Error("Klaida skaitant duomenis");
+      throw new AppError("Klaida skaitant duomenis");
     }
   },
   changeProductQuantity: async (id, quantity) => {
@@ -57,7 +59,14 @@ const warehouseRepository = {
     }
   },
   removeProduct: async (id) => {
-    await Warehouse.findByIdAndDelete(id);
+    const result = await Warehouse.findByIdAndDelete(id);
+    if (!result) {
+      throw new AppError("Warehouse elementas nerastas", 404);
+    }
+    return result;
+    // Warehouse.findByIdAndDelete(id).catch((err) => {
+    //   throw new AppError("Elementas neegzistuoja" + err.massage, 400, ErrorTypes.NOT_FOUND_ERROR);
+    // });
   },
 };
 
