@@ -20,6 +20,18 @@ mongoose.connection.once("open", () => {
 });
 
 app.use(corseMiddleware);
+app.get("/health", (req, res) => {
+  const dbStatus = mongoose.connection.readyState === 1 ? "Connected" : "Disconnected";
+
+  res.status(200).json({
+    status: "Server is running",
+    timestamp: new Date(),
+    database: {
+      status: dbStatus,
+      name: mongoose.connection.name,
+    },
+  });
+});
 app.use("/warehouse", authorization, warehouseRouters);
 app.use("/auth", authRouters);
 app.use((req, res) => {
