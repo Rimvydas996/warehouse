@@ -16,10 +16,7 @@ app.use(express.json());
 connectToDatabase();
 
 mongoose.connection.once("open", () => {
-  const port = process.env.PORT || 3001;
-  app.listen(port, () => {
-    console.log(`Serveris veikia ant ${port} porto`);
-  });
+  console.log("✅ Prisijungta prie MongoDB sėkmingai!");
 });
 
 app.use(corseMiddleware);
@@ -30,3 +27,10 @@ app.use((req, res) => {
 });
 
 app.use(errorHandler);
+if (process.env.NODE_ENV === "development") {
+  app.listen(process.env.PORT || 3001, () => {
+    console.log(`Serveris veikia`);
+  });
+} else {
+  module.exports = app;
+}
