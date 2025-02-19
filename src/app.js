@@ -13,25 +13,71 @@ const errorHandler = require("./middlewares/errorHandler");
 
 app.use(express.json());
 
-connectToDatabase();
+// Wrap database connection in an async function
+const initializeApp = async () => {
+  try {
+    await connectToDatabase();
+  } catch (err) {
+    console.error("Failed to initialize database connection:", err.message);
+  }
+};
+
+// Call the initialization function
+initializeApp();
 
 mongoose.connection.once("open", () => {
   console.log("✅ Prisijungta prie MongoDB sėkmingai!");
 });
 
 app.use(corseMiddleware);
-app.get("/health", (req, res) => {
-  const dbStatus = mongoose.connection.readyState === 1 ? "Connected" : "Disconnected";
 
-  res.status(200).json({
-    status: "Server is running",
-    timestamp: new Date(),
-    database: {
-      status: dbStatus,
-      name: mongoose.connection.name,
-    },
-  });
+mongoose.connection.on("error", (err) => {
+  console.error("❌ MongoDB connection error:", err);
 });
+
+mongoose.connection.on("disconnected", () => {
+  console.warn("⚠️ MongoDB disconnected");
+});
+
+mongoose.connection.on("connected", () => {
+  console.log("✅ MongoDB connected successfully!");
+});
+
+app.get("/health", (req, res) => {
+  try {
+    const dbStatus = mongoose.connection.readyState;
+    const statusMap = {
+      0: "Disconnected",
+      1: "Connected",
+      2: "Connecting",
+      3: "Disconnecting",
+    };
+
+    const status = {
+      status: "Server is running",
+      timestamp: new Date(),
+      database: {
+        status: statusMap[dbStatus],
+        state: dbStatus,
+        name: mongoose.connection.name,
+      },
+    };
+
+    if (dbStatus !== 1) {
+      return res.status(503).json(status);
+    }
+
+    res.status(200).json(status);
+  } catch (err) {
+    console.error("Failed to initialize database connection:", err.message);
+    res.status(500).json({
+      status: "error",
+      message: "Failed to check server health",
+      error: err.message,
+    });
+  }
+});
+
 app.use("/warehouse", authorization, warehouseRouters);
 app.use("/auth", authRouters);
 app.use((req, res) => {

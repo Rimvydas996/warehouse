@@ -1,48 +1,60 @@
-// Tarpdomeninio išteklių bendrinimo (CORS) tvarkymo tarpinė programinė įranga
-// Šis modulis tvarko CORS užklausas, leidžia tik tas, kurios ateina iš leidžiamų domenų.
-// Jis nustato atitinkamas CORS antraštes ir tvarko išankstines OPTIONS užklausas.
+// CORS (Cross-Origin Resource Sharing) middleware configuration
+// This module handles CORS requests and only allows requests from permitted domains
 
-const ALLOWED_DOMAINS = ["localhost", "127.0.0.1", "example.com", "api.example.com"];
+const ALLOWED_DOMAINS = [
+  "localhost",
+  "127.0.0.1",
+  "localhost:3000", // Common React development server
+  "localhost:5173",
+  "warehouse-app-mocha.vercel.app", // Common Vite development server
+];
+
+const ALLOWED_METHODS = ["GET", "POST", "PUT", "DELETE", "OPTIONS"];
+const ALLOWED_HEADERS = ["Origin", "X-Requested-With", "Content-Type", "Accept", "Authorization"];
 
 /**
- * Tarpinė programinė įranga (middleware) skirta tvarkyti Tarpdomeninius išteklių
- * bendrinimo (CORS) užklausas.
+ * Middleware for handling Cross-Origin Resource Sharing (CORS) requests.
  *
- * Ši funkcija tikrina įeinančios užklausos 'Origin' antraštę, kad nustatytų, ar
- * užklausos kilmės domenas yra tarp leidžiamų domenų. Jei domenas yra leidžiamas,
- * nustatomos atitinkamos CORS antraštės, kurios leidžia užklausą. Taip pat tvarkomi
- * išankstiniai OPTIONS užklausų tipai, į kuriuos atsakoma su 200 būsenos kodu.
+ * This function checks the incoming request's 'Origin' header to determine if
+ * the request's origin domain is among the allowed domains. If the domain is
+ * allowed, it sets appropriate CORS headers. It also handles preflight OPTIONS
+ * requests by responding with a 200 status code.
  *
- * @param {Object} req - HTTP užklausos objektas, kuriame saugoma visa užklausos informacija
- * @param {Object} res - HTTP atsakymo objektas, naudojamas siųsti atsakymą
- * @param {Function} next - Funkcija, perduodanti valdymą kitai tarpinei programinei įrangai
+ * @param {Object} req - HTTP request object containing all request information
+ * @param {Object} res - HTTP response object used to send the response
+ * @param {Function} next - Function to pass control to the next middleware
  */
-const corseMiddleware = (req, res, next) => {
+const corsMiddleware = (req, res, next) => {
   const origin = req.headers.origin;
 
-  if (origin) {
-    try {
-      const url = new URL(origin);
-      const hostname = url.hostname;
-
-      if (ALLOWED_DOMAINS.includes(hostname)) {
-        res.header("Access-Control-Allow-Origin", origin);
-        res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-        res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
-        res.header("Access-Control-Allow-Credentials", "true");
-      }
-    } catch (error) {
-      console.error("Netinkamas kilmės adresas:", origin);
-    }
+  if (!origin) {
+    return next();
   }
 
-  // Tvarkyti išankstines užklausas
+  try {
+    const url = new URL(origin);
+    const hostname = url.host; // Using host instead of hostname to include port
+
+    if (ALLOWED_DOMAINS.includes(hostname)) {
+      // Set CORS headers
+      res.header("Access-Control-Allow-Origin", origin);
+      res.header("Access-Control-Allow-Methods", ALLOWED_METHODS.join(", "));
+      res.header("Access-Control-Allow-Headers", ALLOWED_HEADERS.join(", "));
+      res.header("Access-Control-Allow-Credentials", "true");
+      res.header("Vary", "Origin"); // Important for caching
+    } else {
+      console.warn(`Blocked request from unauthorized domain: ${hostname}`);
+    }
+  } catch (error) {
+    console.error("Invalid origin address:", origin, error.message);
+  }
+
+  // Handle preflight requests
   if (req.method === "OPTIONS") {
-    res.sendStatus(200);
-    return;
+    return res.sendStatus(200);
   }
 
   next();
 };
 
-module.exports = corseMiddleware;
+module.exports = corsMiddleware;
