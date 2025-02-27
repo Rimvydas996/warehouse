@@ -3,35 +3,74 @@
 const User = require("../models/userModel");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-// repositorijose neturi buti trycath dalies
+const AppError = require("../utils/errors/AppError");
+const ErrorTypes = require("../utils/errors/errorTypes");
 
 const authRepository = {
   authenticateUser: async (email, password) => {
     const user = await User.findOne({ email });
     if (!user) {
-      return null;
+      throw new Error("User not found");
     }
-    const token = jwt.sign({ userId: user._id, email: user.email }, process.env.JWT_SECRET, { expiresIn: "1h" });
+
+    const isValidPassword = await bcrypt.compare(password, user.password);
+    if (!isValidPassword) {
+      throw new Error("Invalid password");
+    }
+
+    const token = jwt.sign(
+      { userId: user._id, email: user.email, role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: "1h" }
+    );
+
     user.token = token;
-
     await user.save();
-    user.password = undefined;
-    user.token = undefined;
 
-    return { token: token, user: user };
+    return {
+      token,
+      user: {
+        id: user._id,
+        email: user.email,
+        role: user.role,
+      },
+    };
   },
+
   createUser: async (email, password) => {
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      throw new AppError(
+        "Vartotojas su tokiu el. paštu jau egzistuoja",
+        400,
+        ErrorTypes.VALIDATION_ERROR
+      );
+    }
+
     try {
-      const existingUser = await User.findOne({ email });
-      if (existingUser) {
-        throw new Error({ error: "Toks vatotojas jau egzistuoja" });
-      }
       const hashedPassword = await bcrypt.hash(password, 10);
-      const user = new User({ email, password: hashedPassword });
-      await user.save();
-      return user;
-    } catch (err) {
-      throw new Error("Error saving user: " + err.message);
+      const user = new User({
+        email,
+        password: hashedPassword,
+      });
+
+      const savedUser = await user.save();
+      return {
+        id: savedUser._id,
+        email: savedUser.email,
+        role: savedUser.role,
+      };
+    } catch (error) {
+      if (error.name === "ValidationError") {
+        throw new AppError(
+          `Validacijos klaida: ${Object.values(error.errors)
+            .map((err) => err.message)
+            .join(", ")}`,
+          400,
+          ErrorTypes.VALIDATION_ERROR
+        );
+      }
+      throw new AppError("Įvyko klaida kuriant vartotoją", 500, ErrorTypes.INTERNAL_SERVER_ERROR);
     }
   },
 };

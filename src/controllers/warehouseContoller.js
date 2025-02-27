@@ -15,9 +15,11 @@ exports.addProduct = (req, res, next) => {
     if (!title || !quantity || !supplyStatus || !storageLocation) {
       throw new AppError("Truksta lauku uzklausoje", 400, ErrorTypes.REQUIRED_FIELD_ERROR);
     }
-    warehouseRepository.addProduct(title, quantity, supplyStatus, storageLocation).then((product) => {
-      return res.status(201).json(product);
-    });
+    warehouseRepository
+      .addProduct(title, quantity, supplyStatus, storageLocation)
+      .then((product) => {
+        return res.status(201).json(product);
+      });
   } catch (error) {
     next(error);
   }
@@ -60,35 +62,35 @@ exports.changeProductQuantity = (req, res, next) => {
   // }
 };
 
-exports.adjustQuantity = async (kriptis, zingsnis, id, next) => {
+exports.adjustQuantity = async (kriptis, zingsnis, id) => {
+  if (!zingsnis) {
+    throw new AppError("Nenurodytas kiekis", 400, ErrorTypes.REQUIRED_FIELD_ERROR);
+  }
+  let abc = { quantity: +zingsnis };
+  if (kriptis === "-") {
+    abc = { quantity: -zingsnis };
+  }
+  return await warehouseRepository.adjustQuantity(id, abc);
+};
+
+exports.removeFromQuantity = async (req, res, next) => {
   try {
-    if (!zingsnis) {
-      throw new AppError("Nenurodytas kiekis", 400, ErrorTypes.REQUIRED_FIELD_ERROR);
-      // return res.status(400).json({ error: "Nenurodytas kiekis" });
-    }
-    let abc = { quantity: +zingsnis };
-    if (kriptis === "-") {
-      abc = { quantity: -zingsnis };
-    }
-    return await warehouseRepository.adjustQuantity(id, abc);
+    const result = await this.adjustQuantity("-", req.body.zingsnis, req.params.id);
+    return res.json(result);
   } catch (error) {
     next(error);
   }
-  // catch (err) {
-  // if (err.errorType === ErrorTypes.REQUIRED_FIELD_ERROR) {
-  // throw err;
-  // }
-  // return { error: "Klaida " + err.toString() };
-  // }
 };
 
-exports.removeFromQuantity = async (req, res) => {
-  return res.json(await this.adjustQuantity("-", req.body.zingsnis, req.params.id));
+exports.addToQuantity = async (req, res, next) => {
+  try {
+    const result = await this.adjustQuantity("+", req.body.zingsnis, req.params.id);
+    return res.json(result);
+  } catch (error) {
+    next(error);
+  }
 };
 
-exports.addToQuantity = async (req, res) => {
-  return res.json(await this.adjustQuantity("+", req.body.zingsnis, req.params.id));
-};
 exports.removeProduct = async (req, res, next) => {
   try {
     const id = req.params.id;

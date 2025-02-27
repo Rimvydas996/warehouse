@@ -7,14 +7,39 @@ const ErrorTypes = require("../utils/errors/errorTypes");
 exports.register = async (req, res, next) => {
   try {
     const { email, password } = req.body;
+    const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,}$/;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!email || !password) {
       throw new AppError("Truksta lauku uzklausoje", 400, ErrorTypes.VALIDATION_ERROR);
     }
-    authRepository.createUser(email, password);
+    if (!passwordRegex.test(password)) {
+      throw new AppError(
+        "Slaptažodis turi būti bent 6 simbolių ilgio ir turėti bent vieną raidę ir skaičių",
+        400,
+        ErrorTypes.VALIDATION_ERROR
+      );
+    }
+    if (!emailRegex.test(email)) {
+      throw new AppError("Iveskite tinkamą el_pastą", 400, ErrorTypes.VALIDATION_ERROR);
+    }
+    if (password.toLowerCase().includes(email.split("@")[0])) {
+      throw new AppError(
+        "Password cannot contain email username",
+        400,
+        ErrorTypes.VALIDATION_ERROR
+      );
+    }
+
+    const user = await authRepository.createUser(email, password);
+    res.status(201).json({
+      status: "success",
+      data: user,
+    });
   } catch (err) {
     next(err);
   }
 };
+
 exports.login = async (req, res, next) => {
   try {
     const { email, password } = req.body;

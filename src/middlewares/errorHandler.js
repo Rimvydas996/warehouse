@@ -23,7 +23,10 @@ const errorHandler = (err, req, res, next) => {
     });
   }
 
-  if (err.errorType === ErrorTypes.VALIDATION_ERROR || err.errorType === ErrorTypes.REQUIRED_FIELD_ERROR) {
+  if (
+    err.errorType === ErrorTypes.VALIDATION_ERROR ||
+    err.errorType === ErrorTypes.REQUIRED_FIELD_ERROR
+  ) {
     return res.status(err.statusCode).json({
       message: err.message,
       fields: err.details,
@@ -45,12 +48,12 @@ const errorHandler = (err, req, res, next) => {
   });
 };
 
-process.on("unhandledRejection", (reason, promise) => {
-  console.error("Unhandled Rejection:", reason);
-});
+// process.on("unhandledRejection", (reason, promise) => {
+//   console.error("Unhandled Rejection:", reason);
+// });
 
-process.on("uncaughtException", (err) => {
-  console.error("Uncaught Exception:", err);
-});
+// process.on("uncaughtException", (err) => {
+//   console.error("Uncaught Exception:", err);
+// });
 
 module.exports = errorHandler;

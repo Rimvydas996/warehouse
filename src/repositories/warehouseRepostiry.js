@@ -52,7 +52,11 @@ const warehouseRepository = {
   },
   adjustQuantity: async (id, abc) => {
     try {
-      const product = await Warehouse.findByIdAndUpdate(id, { $inc: abc }, { new: true, runValidators: true });
+      const product = await Warehouse.findByIdAndUpdate(
+        id,
+        { $inc: abc },
+        { new: true, runValidators: true }
+      );
       return product;
     } catch (err) {
       throw new Error("Klaida " + err.massage);
