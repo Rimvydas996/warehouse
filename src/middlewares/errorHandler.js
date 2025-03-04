@@ -42,6 +42,7 @@ const errorHandler = (err, req, res, next) => {
   }
 
   // Nežinomos klaidos
+  // log.error(err);
   return res.status(500).json({
     status: "error",
     message: "Kažkas nutiko netinkamai",

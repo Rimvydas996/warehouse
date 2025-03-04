@@ -10,12 +10,12 @@ const authRepository = {
   authenticateUser: async (email, password) => {
     const user = await User.findOne({ email });
     if (!user) {
-      throw new Error("User not found");
+      throw new AppError("Vartotojas nerastas", 401, ErrorTypes.VALIDATION_ERROR);
     }
 
     const isValidPassword = await bcrypt.compare(password, user.password);
     if (!isValidPassword) {
-      throw new Error("Invalid password");
+      throw new AppError("Neteisingas slaptažodis", 401, ErrorTypes.VALIDATION_ERROR);
     }
 
     const token = jwt.sign(
