@@ -1,4 +1,3 @@
-const { getProductById, removeProduct } = require("../controllers/warehouseContoller");
 const Warehouse = require("../models/warehouseIModel");
 const mongoose = require("mongoose");
 const AppError = require("../utils/errors/AppError");
@@ -8,7 +7,6 @@ const warehouseRepository = {
   getAlProducts: async (req, res) => {
     try {
       const products = await Warehouse.find({});
-      // res.json(products);
       return products;
     } catch (err) {
       throw new Error("Klaida skaitant duomenys" + err.massage);
@@ -68,9 +66,6 @@ const warehouseRepository = {
       throw new AppError("Warehouse elementas nerastas", 404);
     }
     return result;
-    // Warehouse.findByIdAndDelete(id).catch((err) => {
-    //   throw new AppError("Elementas neegzistuoja" + err.massage, 400, ErrorTypes.NOT_FOUND_ERROR);
-    // });
   },
 };
 

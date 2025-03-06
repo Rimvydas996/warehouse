@@ -13,7 +13,6 @@ const errorHandler = require("./middlewares/errorHandler");
 
 app.use(express.json());
 
-// Wrap database connection in an async function
 const initializeApp = async () => {
   try {
     await connectToDatabase();
@@ -22,7 +21,6 @@ const initializeApp = async () => {
   }
 };
 
-// Call the initialization function
 initializeApp();
 
 mongoose.connection.once("open", () => {

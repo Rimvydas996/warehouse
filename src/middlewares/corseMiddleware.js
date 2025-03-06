@@ -4,9 +4,9 @@
 const ALLOWED_DOMAINS = [
   "localhost",
   "127.0.0.1",
-  "localhost:3000", // Common React development server
+  "localhost:3000",
   "localhost:5173",
-  "warehouse-app-mocha.vercel.app", // Common Vite development server
+  "warehouse-app-mocha.vercel.app",
 ];
 
 const ALLOWED_METHODS = ["GET", "POST", "PUT", "DELETE", "OPTIONS"];

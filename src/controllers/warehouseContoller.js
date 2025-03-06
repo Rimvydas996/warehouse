@@ -1,5 +1,3 @@
-// const Warehouse = require("../models/warehouseItem");
-const mongoose = require("mongoose");
 const warehouseRepository = require("../repositories/warehouseRepostiry");
 const AppError = require("../utils/errors/AppError");
 const ErrorTypes = require("../utils/errors/errorTypes");
@@ -23,12 +21,6 @@ exports.addProduct = (req, res, next) => {
   } catch (error) {
     next(error);
   }
-  // catch (err) {
-  // if (err.errorType === ErrorTypes.REQUIRED_FIELD_ERROR) {
-  // throw err;
-  // }
-  // return res.status(500).json({ error: "Klaida issaugant duomenis: " + err.toString() });
-  // }
 };
 
 exports.getProductById = async (req, res, next) => {
@@ -54,12 +46,6 @@ exports.changeProductQuantity = (req, res, next) => {
   } catch (error) {
     next(error);
   }
-  // catch (err) {
-  //   if (err.errorType === ErrorTypes.REQUIRED_FIELD_ERROR) {
-  //     throw err;
-  //   }
-  //   return res.status(500).json({ error: "Klaida atnaujinat duomenys" + product });
-  // }
 };
 
 exports.adjustQuantity = async (kriptis, zingsnis, id) => {
@@ -103,17 +89,6 @@ exports.removeProduct = async (req, res, next) => {
     await warehouseRepository.removeProduct(id);
     res.status(204).json("istrinta sekmingai");
   } catch (err) {
-    next(err); // Perduodame klaidą į error handling middleware
+    next(err);
   }
 };
-// const id = req.params.id;
-// if (!id) {
-//   throw new AppError("Id laukelis", 400, ErrorTypes.NOT_FOUND_ERROR);
-// }
-// warehouseRepository
-//   .removeProduct(id)
-//   .then(() => {
-//     return res.json("Istrinta sekmingai");
-//   })
-//   .catch((err) => res.status(err.statusCode).json({ message: err.message }));
-// };

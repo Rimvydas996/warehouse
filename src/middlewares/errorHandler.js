@@ -49,12 +49,4 @@ const errorHandler = (err, req, res, next) => {
   });
 };
 
-// process.on("unhandledRejection", (reason, promise) => {
-//   console.error("Unhandled Rejection:", reason);
-// });
-
-// process.on("uncaughtException", (err) => {
-//   console.error("Uncaught Exception:", err);
-// });
-
 module.exports = errorHandler;
