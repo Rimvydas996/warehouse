@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 
 const connectToDatabase = async () => {
   const username = process.env.MONGODB_USER;
+
   const password = process.env.MONGODB_PASSWORD;
   const cluster = process.env.MONGODB_CLUSTER;
   const dbName = process.env.MONGODB_DB;
