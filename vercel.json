@@ -1,8 +1,27 @@
 {
-  "rewrites": [
+  "version": 2,
+  "builds": [
     {
-      "source": "/(.*)",
-      "destination": "/src/app.js"
+      "src": "src/app.js",
+      "use": "@vercel/node"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/auth/(.*)",
+      "dest": "src/app.js"
+    },
+    {
+      "src": "/warehouse/(.*)",
+      "dest": "src/app.js"
+    },
+    {
+      "src": "/health",
+      "dest": "src/app.js"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "src/app.js"
     }
   ]
 }
