@@ -15,7 +15,7 @@ const corsMiddleware = (req, res, next) => {
     if (origin) {
         try {
             const url = new URL(origin);
-            const hostname = url.host; // includes port if any
+            const hostname = url.hostname; // includes port if any
 
             if (ALLOWED_DOMAINS.includes(hostname)) {
                 // Set CORS headers for allowed domains

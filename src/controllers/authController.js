@@ -7,7 +7,7 @@ const ErrorTypes = require("../utils/errors/errorTypes");
 exports.register = async (req, res, next) => {
     try {
         const { email, password } = req.body;
-        const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,}$/;
+        const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d).{6,}$/;
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!email || !password) {
             throw new AppError("Truksta lauku uzklausoje", 400, ErrorTypes.VALIDATION_ERROR);
