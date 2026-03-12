@@ -6,7 +6,7 @@ const ALLOWED_DOMAINS = [
     "warehouse-app-mocha.vercel.app",
 ];
 
-const ALLOWED_METHODS = ["GET", "POST", "PUT", "DELETE", "OPTIONS"];
+const ALLOWED_METHODS = ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"];
 const ALLOWED_HEADERS = ["Origin", "X-Requested-With", "Content-Type", "Accept", "Authorization"];
 
 const corsMiddleware = (req, res, next) => {
