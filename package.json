@@ -1,29 +1,29 @@
 {
-  "name": "warehouse",
-  "version": "1.0.0",
-  "description": "",
-  "main": "src/app.js",
-  "engines": {
-    "node": "22.x"
-  },
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon src/app.js",
-    "start": "node src/app.js"
-  },
-  "author": "rimvydas",
-  "license": "ISC",
-  "dependencies": {
-    "bcrypt": "^5.1.1",
-    "dotenv": "^16.4.5",
-    "express": "^4.21.2",
-    "glob": "10.4.2",
-    "jsonwebtoken": "^9.0.2",
-    "lru-cache": "^11.2.2",
-    "mongoose": "^8.8.1",
-    "rimraf": "5.0.7"
-  },
-  "devDependencies": {
-    "nodemon": "^3.1.9"
-  }
+    "name": "warehouse",
+    "version": "1.0.0",
+    "description": "",
+    "main": "api/index.js",
+    "engines": {
+        "node": "22.x"
+    },
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1",
+        "dev": "nodemon server.js",
+        "start": "node server.js"
+    },
+    "author": "rimvydas",
+    "license": "ISC",
+    "dependencies": {
+        "bcrypt": "^5.1.1",
+        "dotenv": "^16.4.5",
+        "express": "^4.21.2",
+        "glob": "10.4.2",
+        "jsonwebtoken": "^9.0.2",
+        "lru-cache": "^11.2.2",
+        "mongoose": "^8.8.1",
+        "rimraf": "5.0.7"
+    },
+    "devDependencies": {
+        "nodemon": "^3.1.9"
+    }
 }
