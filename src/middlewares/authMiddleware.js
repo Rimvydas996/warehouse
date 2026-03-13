@@ -2,37 +2,44 @@
 
 const User = require("../models/userModel");
 const jwt = require("jsonwebtoken");
+const AppError = require("../utils/errors/AppError");
+const ErrorTypes = require("../utils/errors/errorTypes");
 
 const authorize = async (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
 
     if (!authHeader) {
-      return res.status(401).json({ error: "Nera authorization headeriu" });
+      throw new AppError("Nera authorization headeriu", 401, ErrorTypes.AUTHENTICATION_ERROR);
     }
 
     const token = authHeader.split(" ")[1];
 
     if (!token) {
-      return res.status(401).json({ error: "Nera tokenu" });
+      throw new AppError("Nera tokenu", 401, ErrorTypes.AUTHENTICATION_ERROR);
     }
 
-    const user = await User.findOne({ token: token });
+    const user = await User.findOne({ token });
 
     if (!user) {
-      return res.status(401).json({ error: "Nerastas vartotojas" });
+      throw new AppError("Nerastas vartotojas", 401, ErrorTypes.AUTHENTICATION_ERROR);
     }
 
-    jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
-      if (err) {
-        return res.status(401).json({ error: "Nepavyko prisijungti: " + err.toString() });
-      }
-    });
+    const jwtSecret = process.env.JWT_SECRET;
+    if (!jwtSecret) {
+      throw new AppError("Server configuration error", 500, ErrorTypes.UNKNOWN_ERROR);
+    }
+
+    jwt.verify(token, jwtSecret);
     req.user = user;
+
+    return next();
   } catch (error) {
-    return res.status(500).json(err.toString());
+    if (error && (error.name === "JsonWebTokenError" || error.name === "TokenExpiredError")) {
+      return next(new AppError("Nepavyko prisijungti", 401, ErrorTypes.AUTHENTICATION_ERROR));
+    }
+    return next(error);
   }
-  next();
 };
 
 module.exports = authorize;

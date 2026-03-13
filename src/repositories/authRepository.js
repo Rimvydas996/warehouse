@@ -18,9 +18,14 @@ const authRepository = {
       throw new AppError("Neteisingas slaptažodis", 401, ErrorTypes.VALIDATION_ERROR);
     }
 
+    const jwtSecret = process.env.JWT_SECRET;
+    if (!jwtSecret) {
+      throw new AppError("Server configuration error", 500, ErrorTypes.UNKNOWN_ERROR);
+    }
+
     const token = jwt.sign(
       { userId: user._id, email: user.email, role: user.role },
-      process.env.JWT_SECRET,
+      jwtSecret,
       { expiresIn: "1h" }
     );
 
