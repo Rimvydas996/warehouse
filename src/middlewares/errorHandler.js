@@ -23,6 +23,12 @@ const errorHandler = (err, req, res, next) => {
     });
   }
 
+  if (err && err.type === "entity.parse.failed") {
+    return res.status(400).json({
+      message: "Neteisingas JSON formatas",
+    });
+  }
+
   if (
     err.errorType === ErrorTypes.VALIDATION_ERROR ||
     err.errorType === ErrorTypes.REQUIRED_FIELD_ERROR
@@ -30,6 +36,26 @@ const errorHandler = (err, req, res, next) => {
     return res.status(err.statusCode).json({
       message: err.message,
       fields: err.details,
+    });
+  }
+
+  if (err && err.name === "ValidationError") {
+    return res.status(400).json({
+      message: "Validation failed",
+      fields: err.errors,
+    });
+  }
+
+  if (err && err.code === 11000) {
+    return res.status(409).json({
+      message: "Duplicate key error",
+      fields: err.keyValue,
+    });
+  }
+
+  if (err && err.name === "CastError") {
+    return res.status(400).json({
+      message: "Netinkamas ID tipas",
     });
   }
 
