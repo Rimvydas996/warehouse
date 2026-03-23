@@ -8,6 +8,8 @@ const warehouseItemSchema = new mongoose.Schema(
     quantity: { type: Number, required: true, min: 0 },
     supplyStatus: { type: Boolean, required: true },
     storageLocation: { type: String, required: true, trim: true },
+    refillThreshold: { type: Number, required: false, min: 0, default: 0 },
+    warehouseId: { type: mongoose.Schema.Types.ObjectId, ref: "Warehouse", required: true },
   },
   {
     timestamps: true,
