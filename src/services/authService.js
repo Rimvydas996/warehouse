@@ -40,6 +40,12 @@ const authService = {
     }
     return authRepository.authenticateUser(email, password);
   },
+  updateThemePreference: async (user, themePreference) => {
+    if (!themePreference || typeof themePreference !== "string") {
+      throw new AppError("Truksta lauku uzklausoje", 400, ErrorTypes.VALIDATION_ERROR);
+    }
+    return authRepository.updateThemePreference(user, themePreference);
+  },
 };
 
 module.exports = authService;

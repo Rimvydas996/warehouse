@@ -27,6 +27,10 @@ const userSchema = new mongoose.Schema(
       enum: ["admin", "manager", "member", "user"],
       default: "member",
     },
+    themePreference: {
+      type: String,
+      default: "sunrise",
+    },
     activeWarehouseId: { type: mongoose.Schema.Types.ObjectId, ref: "Warehouse", required: false },
     premission: [
       {

@@ -45,6 +45,7 @@ const warehouseEntityService = {
       name: String(name).trim(),
       ownerId: user._id,
       locations: [],
+      homeContainers: [],
     });
 
     await warehouseMembershipRepository.createMembership({
@@ -118,6 +119,72 @@ const warehouseEntityService = {
       Array.from(currentLocations)
     );
 
+    return updated;
+  },
+
+  updateHomeContainers: async (user, { add = [], remove = [] }) => {
+    const warehouse = await requireActiveWarehouse(user);
+    const membership = await requireMembership(user, warehouse._id);
+    requireRole(membership, ["admin", "manager"]);
+
+    const normalizedAdd = (Array.isArray(add) ? add : [])
+      .map((item) => ({
+        title: String(item?.title ?? "").trim(),
+        description: String(item?.description ?? "").trim(),
+        tasks: String(item?.tasks ?? "").trim(),
+      }))
+      .filter((item) => item.title && item.description && item.tasks);
+
+    if ((Array.isArray(add) && add.length > 0 && normalizedAdd.length === 0) || !Array.isArray(add)) {
+      throw new AppError(
+        "Truksta konteineriu duomenu",
+        400,
+        ErrorTypes.REQUIRED_FIELD_ERROR
+      );
+    }
+
+    const removeSet = new Set(
+      (Array.isArray(remove) ? remove : []).map((id) => String(id).trim()).filter(Boolean)
+    );
+
+    if (!Array.isArray(remove)) {
+      throw new AppError(
+        "Neteisingi konteineriu ID",
+        400,
+        ErrorTypes.VALIDATION_ERROR
+      );
+    }
+
+    const currentContainers = Array.isArray(warehouse.homeContainers)
+      ? warehouse.homeContainers.filter((item) => !removeSet.has(String(item._id)))
+      : [];
+
+    warehouse.homeContainers = [...currentContainers, ...normalizedAdd];
+    const updated = await warehouse.save();
+    return updated;
+  },
+
+  updateHomeContainerTasks: async (user, containerId, { tasks }) => {
+    const warehouse = await requireActiveWarehouse(user);
+    const membership = await requireMembership(user, warehouse._id);
+    requireRole(membership, ["admin", "manager"]);
+
+    if (!containerId) {
+      throw new AppError("Truksta konteinerio ID", 400, ErrorTypes.REQUIRED_FIELD_ERROR);
+    }
+
+    const normalizedTasks = String(tasks ?? "").trim();
+    if (!normalizedTasks) {
+      throw new AppError("Truksta uzduociu", 400, ErrorTypes.REQUIRED_FIELD_ERROR);
+    }
+
+    const container = warehouse.homeContainers?.id(containerId);
+    if (!container) {
+      throw new AppError("Konteineris nerastas", 404, ErrorTypes.NOT_FOUND_ERROR);
+    }
+
+    container.tasks = normalizedTasks;
+    const updated = await warehouse.save();
     return updated;
   },
 
