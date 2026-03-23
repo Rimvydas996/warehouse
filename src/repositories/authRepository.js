@@ -44,6 +44,7 @@ const authRepository = {
         email: user.email,
         role: user.role,
         activeWarehouseId: user.activeWarehouseId || null,
+        themePreference: user.themePreference || "sunrise",
       },
     };
   },
@@ -71,6 +72,7 @@ const authRepository = {
         email: savedUser.email,
         role: savedUser.role,
         activeWarehouseId: savedUser.activeWarehouseId || null,
+        themePreference: savedUser.themePreference || "sunrise",
       };
     } catch (error) {
       if (error.name === "ValidationError") {
