@@ -7,6 +7,13 @@ const warehouseSchema = new mongoose.Schema(
     name: { type: String, required: true, trim: true },
     ownerId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
     locations: [{ type: String, trim: true }],
+    homeContainers: [
+      {
+        title: { type: String, required: true, trim: true },
+        description: { type: String, required: true, trim: true },
+        tasks: { type: String, required: true, trim: true },
+      },
+    ],
   },
   {
     timestamps: true,

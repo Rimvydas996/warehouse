@@ -49,6 +49,28 @@ exports.updateLocations = async (req, res, next) => {
   }
 };
 
+exports.updateHomeContainers = async (req, res, next) => {
+  try {
+    const updated = await warehouseEntityService.updateHomeContainers(req.user, req.body);
+    return res.status(200).json(updated);
+  } catch (error) {
+    return next(error);
+  }
+};
+
+exports.updateHomeContainerTasks = async (req, res, next) => {
+  try {
+    const updated = await warehouseEntityService.updateHomeContainerTasks(
+      req.user,
+      req.params.containerId,
+      req.body
+    );
+    return res.status(200).json(updated);
+  } catch (error) {
+    return next(error);
+  }
+};
+
 exports.addUser = async (req, res, next) => {
   try {
     const member = await warehouseEntityService.addUserToWarehouse(req.user, req.body);
