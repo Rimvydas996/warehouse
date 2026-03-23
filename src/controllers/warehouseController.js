@@ -29,10 +29,9 @@ exports.getProductById = async (req, res, next) => {
   }
 };
 
-exports.changeProductQuantity = async (req, res, next) => {
+exports.updateProduct = async (req, res, next) => {
   try {
-    const { quantity } = req.body;
-    const updated = await warehouseService.changeProductQuantity(req.params.id, quantity);
+    const updated = await warehouseService.updateProduct(req.params.id, req.body);
     return res.status(200).json(updated);
   } catch (error) {
     return next(error);
