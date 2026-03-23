@@ -72,6 +72,8 @@ const warehouseService = {
 
   createProduct: async ({ title, quantity, supplyStatus, storageLocation, refillThreshold }, user) => {
     const warehouse = await requireWarehouseForUser(user);
+    const membership = await warehouseMembershipRepository.getMembership(user._id, warehouse._id);
+    requireRole(membership, ["admin", "manager"]);
 
     if (!title || supplyStatus === undefined || supplyStatus === null || !storageLocation) {
       throw new AppError("Truksta lauku uzklausoje", 400, ErrorTypes.REQUIRED_FIELD_ERROR);
