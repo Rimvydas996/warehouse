@@ -87,6 +87,17 @@ const authRepository = {
       throw new AppError("Įvyko klaida kuriant vartotoją", 500, ErrorTypes.INTERNAL_SERVER_ERROR);
     }
   },
+  updateThemePreference: async (user, themePreference) => {
+    user.themePreference = themePreference;
+    await user.save();
+    return {
+      _id: user._id,
+      email: user.email,
+      role: user.role,
+      activeWarehouseId: user.activeWarehouseId || null,
+      themePreference: user.themePreference || "sunrise",
+    };
+  },
 };
 
 module.exports = authRepository;
