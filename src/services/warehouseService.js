@@ -48,10 +48,27 @@ const warehouseService = {
     });
   },
 
-  changeProductQuantity: async (id, quantity) => {
+  updateProduct: async (id, payload) => {
     requireObjectId(id);
-    const normalizedQuantity = requireNumber(quantity, "Truksta quantity lauko");
-    const updated = await warehouseRepository.updateProductQuantity(id, normalizedQuantity);
+    const update = {};
+
+    if (payload.quantity !== undefined) {
+      update.quantity = requireNumber(payload.quantity, "Truksta quantity lauko");
+    }
+
+    if (payload.storageLocation !== undefined) {
+      const location = String(payload.storageLocation).trim();
+      if (!location) {
+        throw new AppError("Truksta storageLocation lauko", 400, ErrorTypes.REQUIRED_FIELD_ERROR);
+      }
+      update.storageLocation = location;
+    }
+
+    if (!Object.keys(update).length) {
+      throw new AppError("Truksta lauku uzklausoje", 400, ErrorTypes.REQUIRED_FIELD_ERROR);
+    }
+
+    const updated = await warehouseRepository.updateProduct(id, update);
     if (!updated) {
       throw new AppError("Elementas nerastas", 404, ErrorTypes.NOT_FOUND_ERROR);
     }

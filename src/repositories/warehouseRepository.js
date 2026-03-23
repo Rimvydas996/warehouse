@@ -12,8 +12,8 @@ const warehouseRepository = {
   getProductById: async (id) => {
     return Warehouse.findById(id);
   },
-  updateProductQuantity: async (id, quantity) => {
-    return Warehouse.findByIdAndUpdate(id, { quantity }, { new: true, runValidators: true });
+  updateProduct: async (id, update) => {
+    return Warehouse.findByIdAndUpdate(id, update, { new: true, runValidators: true });
   },
   adjustQuantity: async (id, delta) => {
     return Warehouse.findByIdAndUpdate(
