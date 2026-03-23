@@ -24,7 +24,12 @@ const authRepository = {
     }
 
     const token = jwt.sign(
-      { userId: user._id, email: user.email, role: user.role },
+      {
+        userId: user._id,
+        email: user.email,
+        role: user.role,
+        activeWarehouseId: user.activeWarehouseId || null,
+      },
       jwtSecret,
       { expiresIn: "1h" }
     );
@@ -35,8 +40,10 @@ const authRepository = {
     return {
       token,
       user: {
+        _id: user._id,
         email: user.email,
         role: user.role,
+        activeWarehouseId: user.activeWarehouseId || null,
       },
     };
   },
@@ -60,9 +67,10 @@ const authRepository = {
 
       const savedUser = await user.save();
       return {
-        id: savedUser._id,
+        _id: savedUser._id,
         email: savedUser.email,
         role: savedUser.role,
+        activeWarehouseId: savedUser.activeWarehouseId || null,
       };
     } catch (error) {
       if (error.name === "ValidationError") {

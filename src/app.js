@@ -9,6 +9,7 @@ const connectToDatabase = require("./services/database");
 const corsMiddleware = require("./middlewares/corsMiddleware");
 const authRouters = require("./routes/authRoutes");
 const warehouseRouters = require("./routes/warehouseRoutes");
+const warehouseEntityRoutes = require("./routes/warehouseEntityRoutes");
 const authorization = require("./middlewares/authMiddleware");
 const errorHandler = require("./middlewares/errorHandler");
 const AppError = require("./utils/errors/AppError");
@@ -46,6 +47,7 @@ app.get("/health", (req, res) => {
 
 app.use("/auth", authRouters);
 app.use("/warehouse", authorization, warehouseRouters);
+app.use("/warehouses", authorization, warehouseEntityRoutes);
 
 app.use((req, res, next) => {
   return next(new AppError("Puslapis nerastas", 404, ErrorTypes.NOT_FOUND_ERROR));

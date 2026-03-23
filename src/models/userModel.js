@@ -24,9 +24,10 @@ const userSchema = new mongoose.Schema(
     token: { type: String, required: false },
     role: {
       type: String,
-      enum: ["user", "admin"],
-      default: "user",
+      enum: ["admin", "manager", "member", "user"],
+      default: "member",
     },
+    activeWarehouseId: { type: mongoose.Schema.Types.ObjectId, ref: "Warehouse", required: false },
     premission: [
       {
         type: String,
